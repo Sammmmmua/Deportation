@@ -1,0 +1,1140 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>This Land is MY Land</title>
+  <style>
+    /* warning, instructions, forms, time, iframe, animaiton, wait time, video working */
+    body {
+      font-family: Arial, sans-serif;
+      background: #111;
+      background-image: url('bg.jpeg');
+      color: #eee;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding-top: 50px;
+    }
+    #gameArea {
+      display: flex;
+      justify-content: space-between;
+      width: 100%; /* 🔥 instead of 300px */
+      max-width: 1000px; /* Optional: limit it if needed */
+      height: 100px; /* optional: make space for king & murderer */
+      position: relative;
+      z-index: 1;
+    }
+    .object {
+      width: 100px;
+      height: 100px;
+      text-align: center;
+      line-height: 60px;
+      font-weight: bold;
+      cursor: pointer;
+      position: absolute;
+    }
+    #king {
+
+      width: 80px;
+      height: 80px;
+      object-fit: contain;
+      position: absolute;
+
+    }
+    #murderer {
+
+      width: 100px;
+      height: 100px;
+      object-fit: contain;
+      position: absolute;
+
+    }
+    .document {
+      display: inline-block;
+      padding: 10px;
+      margin: 5px;
+      background: #222;
+      color: white;
+      border-radius: 5px;
+      cursor: pointer;
+      text-align: center;
+      position: relative;
+      top: 10px;
+    }
+
+    .progress-bar {
+      width: 100%;
+      height: 5px;
+      background-color: #444;
+      margin-top: 5px;
+    }
+    .progress {
+      height: 100%;
+      background-color: lightgreen;
+      width: 0;
+    }
+    #message {
+      margin-top: 30px;
+      color: gold;
+      text-align: center;
+      background-color: #111;
+    }
+    #timer {
+      margin-top: 20px;
+      font-size: 18px;
+    }
+    #progressBar {
+      width: 80%;
+      background-color: #444;
+      height: 20px;
+      margin-top: 30px;
+      border-radius: 10px;
+      overflow: hidden;
+    }
+    #progress {
+      height: 100%;
+      width: 0%;
+      background-color: lightgreen;
+      transition: width 1s linear;
+    }
+    #video {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: black;
+      display: none;
+      z-index: 100;
+      justify-content: center;
+      align-items: center;
+    }
+    #videoPlayer {
+      width: 80%;
+      height: auto;
+    }
+
+    .hover-message {
+    display: none; /* Hidden by default */
+    position: absolute;
+    top: 50px; /* Adjust this to appear just under the document */
+    left: 50%;
+    transform: translateX(-50%); /* Center the message horizontally */
+    color: red; /* Distinct color for hover messages */
+    background-color: #111;
+    font-size: 14px;
+    z-index: 10;
+    pointer-events: none; /* Prevent interaction with the hover message */
+  }
+
+  .document-container {
+    position: relative; /* Set relative for correct positioning of hover messages */
+    display: inline-block;
+    margin: 10px; /* Spacing between documents */
+    text-align: center;
+  }
+
+  .document-container:hover .hover-message {
+  display: block; /* Show the message when hovering over the document container */
+}
+
+  .document-form {
+    display: none; /* Forms are hidden by default */
+    position: absolute;
+    top: 60px; /* Position them right under the documents */
+    left: 50%;
+    transform: translateX(-50%);
+    background: #222;
+    padding: 10px;
+    border-radius: 5px;
+    z-index: 20;
+    color: white;
+    text-align: center;
+  }
+
+  .document-form input[type="text"],
+  .document-form select {
+    margin: 5px 0;
+    padding: 5px;
+    width: 80%;
+    border: none;
+    border-radius: 5px;
+  }
+
+  .document-form button {
+    padding: 5px 10px;
+    background: lightblue;
+    color: black;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+  }
+
+  .document-form button:hover {
+    background: gold;
+  }
+
+
+
+  .iframe-container {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      z-index: -1; /* Puts the iframes behind all other content */
+    }
+
+    iframe {
+      position: absolute;
+      border: none;
+    }
+
+    iframe:nth-child(1) {
+      top: 10%;
+      right: 10%;
+      width: 10%;
+      height: 20%;
+      border-radius: 20%;
+    }
+
+    iframe:nth-child(2) {
+      top: 10%;
+      left: 10%;
+      width: 10%;
+      height: 50%;
+      border-radius: 20%;
+    }
+
+    iframe:nth-child(3) {
+      top: 500px;
+      left: 15%;
+      width: 20%;
+      height: 50%;
+      border-radius: 20%;
+    }
+
+    iframe:nth-child(4) {
+      top: 550px;
+      right: 10%;
+      width: 50%;
+      height: 50%;
+      border-radius: 20%;
+    }
+
+    iframe:nth-child(5) {
+      top: 45%;
+      left: 45%;
+      width: 50%;
+      height: 20%; 
+      border-radius: 20%;
+    }
+
+
+
+  </style>
+</head>
+<body>
+  <a href="https://public.tableau.com/app/profile/danielleharlow/viz/UnitedStatesDisappearedTracker/Map" target="_blank">
+    <h1>This Land is MY Land</h1>
+  </a>
+  <div id="timer">Time Remaining: 5:00</div>
+  <div id="progressBar"><div id="progress"></div></div>
+  <div id="gameArea">
+    <img id="king" class="object" src="student1.png" alt="King" style="left: 50px; top: 25px;">
+   <img id="murderer" src="ICE1.png" alt="B" style="left: 0px; top: 20px;">
+  </div>
+  
+
+  <div id="documents">
+    <div class="document-container">
+      <div id="I20" class="document">I20</div>
+      <form class="document-form" id="form-I20">
+        <label for="name-I20">Name:</label>
+        <input type="text" id="name-I20" name="name-I20" required />
+      
+        <label for="dob-I20">Date of Birth:</label>
+        <input type="date" id="dob-I20" name="dob-I20" required />
+      
+        <label for="gender-I20">Gender:</label>
+        <select id="gender-I20" name="gender-I20" required>
+          <option value="">Select Gender</option>
+          <option value="female">Female</option>
+          <option value="male">Male</option>
+          <option value="x">Non-binary..nvm this is no longer a "thing".<br> Trump took it out.</option>
+        </select>
+      
+        <label for="major-I20">Major(Is this sensitive???):</label>
+        <input type="text" id="major-I20" name="major-I20" required />
+      
+        <label for="grad-date-I20">Date of Graduation:</label>
+        <input type="date" id="grad-date-I20" name="grad-date-I20" required />
+      
+        <button type="submit">Submit I-20</button>
+      </form>
+      
+      <div class="hover-message">Get this from your school. Wait on the phone line for 30 minutes<br>then talk to an exteremly irratated administrator. </div>
+    </div>
+  
+
+
+
+
+
+
+    <div class="document-container">
+      <div id="I94" class="document">I94</div>
+      <form class="document-form" id="form-I94">
+        <label for="name-I94">Name:</label>
+        <input type="text" id="name-I94" name="name-I94" required />
+      
+        <label for="age-I94">Age:</label>
+        <input type="number" id="age-I94" name="age-I94" min="0" required />
+      
+        <label for="race-I94">Race:</label>
+        <select id="race-I94" name="race-I94" required>
+          <option value="">Select Race</option>
+          <option value="asian">Asian</option>
+          <option value="black">Black or African American</option>
+          <option value="white">White</option>
+          <option value="native">American Indian or Alaska Native</option>
+          <option value="pacific">Native Hawaiian or Other Pacific Islander</option>
+          <option value="other">Other...so not white</option>
+          <option value="prefer-not-to-say">Prefer not to say...that's sus</option>
+        </select>
+        <label for="arrival-I94">When did you last arrive in the US?</label>
+        <input type="date" id="arrival-I94" name="arrival-I94" required />
+      
+        <button type="submit">Submit I-94</button>
+      </form>
+      
+      <div class="hover-message">This is the arrival/departure record.<br> Basically they wanna know you didn't come by boat.</div>
+    </div>
+  
+
+
+
+
+
+
+    <div class="document-container">
+      <div id="passport" class="document">Passport</div>
+      <form class="document-form" id="form-passport">
+        <label for="name-passport">Name:</label>
+        <input type="text" id="name-passport" name="name-passport" required />
+      
+        <label for="race-passport">Race:</label>
+        <select id="race-passport" name="race-passport" required>
+          <option value="">Select Race</option>
+          <option value="asian">Asian</option>
+          <option value="black">Black or African American</option>
+          <option value="white">White</option>
+          <option value="native">American Indian or Alaska Native</option>
+          <option value="pacific">Native Hawaiian or Other Pacific Islander</option>
+          <option value="other">Other</option>
+          <option value="prefer-not-to-say">Prefer not to say</option>
+        </select>
+      
+        <label for="age-passport">Age:</label>
+        <input type="number" id="age-passport" name="age-passport" min="0" required />
+      
+        <label for="dob-passport">Date of Birth:</label>
+        <input type="date" id="dob-passport" name="dob-passport" required />
+      
+        <label for="country-passport">Country:</label>
+        <input type="text" id="country-passport" name="country-passport" required />
+      
+        <button type="submit">Submit Passport</button>
+      </form>      
+      <div class="hover-message">Now we're talking. This is a gold mine for mistakes.<br>Gold mine if you have a KPI for deportation as well.</div>
+    </div>
+  
+
+
+
+
+
+
+    <div class="document-container">
+      <div id="F1" class="document disabled">F1</div>
+      <form class="document-form" id="form-F1">
+        <label for="name-F1">Name:</label>
+        <input type="text" id="name-F1" name="name-F1" required />
+      
+        <label for="why-F1">Why are you here?</label>
+        <textarea id="why-F1" name="why-F1" rows="3" required></textarea>
+      
+        <label for="sure-study-F1">You sure you're just here to study?</label>
+        <select id="sure-study-F1" name="sure-study-F1" required>
+          <option value="">Select</option>
+          <option value="yes">Yes</option>
+          <option value="no">No</option>
+        </select>
+      
+        <label for="super-sure-F1">Are you super sure?</label>
+        <select id="super-sure-F1" name="super-sure-F1" required>
+          <option value="">Select</option>
+          <option value="absolutely">Absolutely</option>
+          <option value="not-really">Not really</option>
+        </select>
+      
+        <label for="named-school-F1">Do you attend a good school?</label>
+        <select id="named-school-F1" name="named-school-F1" required>
+          <option value="">Select</option>
+          <option value="yes">Yes</option>
+          <option value="no">No</option>
+        </select>
+      
+        <label for="sensitive-major-F1">Is your major sensitive?</label>
+        <select id="sensitive-major-F1" name="sensitive-major-F1" required>
+          <option value="">Select</option>
+          <option value="yes">Yes</option>
+          <option value="no">No</option>
+          <option value="unsure">Unsure</option>
+        </select>
+      
+        <label for="terrorist-F1">Are you a terrorist?</label>
+        <select id="terrorist-F1" name="terrorist-F1" required>
+          <option value="">Select</option>
+          <option value="no">No</option>
+          <option value="what-kind-of-question-is-this">What kind of question is this?</option>
+        </select>
+      
+        <label for="love-trump-F1">Do you love Trump?</label>
+        <select id="love-trump-F1" name="love-trump-F1" required>
+          <option value="">Select</option>
+          <option value="yes">Yes</option>
+          <option value="no">No</option>
+          <option value="neutral">Neutral</option>
+          <option value="rather-not-say">Rather not say</option>
+        </select>
+      
+        <label for="details-F1">Details:</label>
+        <input type="text" id="details-F1" name="details-F1" required />
+      
+        <button type="submit">Submit F-1</button>
+      </form>
+      
+      <div class="hover-message">Better not have an expired student visa.<br> 
+        By the time you have this visa, you've paid about 600 dollars to the US government.<br>
+        You've waited about 6 months.<br>
+        You've been grilled by the visa interviewer. <br>
+        All for this very light paper.
+       </div>
+    </div>
+
+
+
+
+
+
+
+
+  
+    <div class="document-container">
+      <div id="physicalProof" class="document">Physical Proof</div>
+      <form class="document-form" id="form-physicalProof">
+        <label for="evidence-physicalProof">Evidence:</label>
+        <input type="text" id="evidence-physicalProof" name="evidence-physicalProof" required />
+      
+        <label for="address-physicalProof">Where do you live?</label>
+        <input type="text" id="address-physicalProof" name="address-physicalProof" required />
+      
+        <label for="visit-ok-physicalProof">Can we drop by — you got nothing to hide anyway, right?</label>
+        <select id="visit-ok-physicalProof" name="visit-ok-physicalProof" required>
+          <option value="">Select</option>
+          <option value="sure">Sure, come on over</option>
+          <option value="nah">Nah, I'm good</option>
+          <option value="depends">Depends who's asking</option>
+        </select>
+      
+        <button type="submit">Submit Physical Proof</button>
+      </form>      
+      <div class="hover-message">Evidence of physical presence seems easy.
+        <br> Have to prove you live at the address you have on record. 
+        <br>But who carries that around?</div>
+    </div>
+  
+
+
+
+
+
+
+
+
+
+    <div class="document-container">
+      <div id="policeClearance" class="document disabled">Police Clearance</div>
+      <form class="document-form" id="form-policeClearance">
+      
+        <label for="clearance-policeClearance">Briefly describe your alleged innocence:</label>
+        <input type="text" id="clearance-policeClearance" name="clearance-policeClearance" required />
+      
+        <label for="good-boy-status">Have you been a good boy?</label>
+        <select id="good-boy-status" name="good-boy-status" required>
+          <option value="">Select</option>
+          <option value="always">Yes, model subject</option>
+          <option value="occasionally">Mostly, except Mondays</option>
+          <option value="define-good">Define “good”</option>
+        </select>
+      
+        <label for="bootlick-readiness">Are you ready to bootlick an officer if asked (politely)?</label>
+        <select id="bootlick-readiness" name="bootlick-readiness" required>
+          <option value="">Select</option>
+          <option value="eager">Eager and ready</option>
+          <option value="reluctant">Reluctantly compliant</option>
+          <option value="nope">I’d rather not</option>
+        </select>
+      
+        <label for="squeaky-clean">How sure are you that you're squeaky clean?</label>
+        <input type="text" id="squeaky-clean" name="squeaky-clean" placeholder="Confidence score from 0-ICE" required />
+      
+        <label for="tickets">Any parking or speeding tickets?</label>
+        <select id="tickets" name="tickets" required>
+          <option value="">Select</option>
+          <option value="none">Never even jaywalked</option>
+          <option value="minor">Minor infractions (allegedly)</option>
+          <option value="lots">Let's just say I know the DMV well</option>
+        </select>
+      
+        <label for="poc-check">If you're a person of color, do you have gang ties (we'll assume yes if blank)?</label>
+        <select id="poc-check" name="poc-check" required>
+          <option value="">Select</option>
+          <option value="yes">Yes, obviously</option>
+          <option value="no">No, despite your expectations</option>
+          <option value="not-answering">I decline to dignify that</option>
+        </select>
+      
+        <button type="submit">Submit to Authority</button>
+      </form>
+      
+      <div class="hover-message">How do you prove something you've never done? <br>Yay, police bureaucracy!
+      <br> How sure are you that you don't have a speeding ticket though?
+    </div>
+    </div>
+  
+
+
+
+
+
+
+
+    <div class="document-container">
+      <div id="financialProof" class="document">Financial Proof</div>
+      <form class="document-form" id="form-financialProof">
+      
+        <label for="proof-financialProof">Brief explanation of how you exist without burdening the state:</label>
+        <input type="text" id="proof-financialProof" name="proof-financialProof" required />
+      
+        <label for="wealth-level">How rich are you?</label>
+        <select id="wealth-level" name="wealth-level" required>
+          <option value="">Select</option>
+          <option value="broke">Broke but surviving</option>
+          <option value="middle">Respectably middle class</option>
+          <option value="rich">Rich enough to own a blender with settings</option>
+          <option value="ultra-rich">Private jet energy</option>
+        </select>
+      
+        <label for="assets">What assets do you currently own?</label>
+        <div>
+          <input type="checkbox" id="asset-car" name="assets" value="car" />
+          <label for="asset-car">Car (functioning)</label><br/>
+          <input type="checkbox" id="asset-home" name="assets" value="home" />
+          <label for="asset-home">Home (not made of debt)</label><br/>
+          <input type="checkbox" id="asset-bitcoin" name="assets" value="bitcoin" />
+          <label for="asset-bitcoin">Cryptocurrency (because vibes)</label><br/>
+          <input type="checkbox" id="asset-heirloom" name="assets" value="heirloom" />
+          <label for="asset-heirloom">Family heirlooms worth pawning</label><br/>
+          <input type="checkbox" id="asset-none" name="assets" value="none" />
+          <label for="asset-none">None of the above, thanks for asking</label>
+        </div>
+      
+        <label for="parent-wealth">How rich are your parents?</label>
+        <input type="text" id="parent-wealth" name="parent-wealth" placeholder="e.g., 'Upper-middle with frequent flyer miles'" required />
+      
+        <button type="submit">Submit Financial Proof</button>
+      </form>
+      
+      <div class="hover-message"> You're here to learn?<br> Gotta prove you're rich first!</div>
+    </div>
+  
+
+
+
+
+
+
+
+
+
+    <div class="document-container">
+      <div id="lawyer" class="document">Lawyer</div>
+      <form class="document-form" id="form-lawyer">
+
+      
+        <label for="lawyer-details">Lawyer's Name (real or otherwise):</label>
+        <input type="text" id="lawyer-details" name="lawyer-details" required />
+      
+        <label for="lawyer-ties">Does your lawyer have ties to any influential figures or shadowy organizations?</label>
+        <textarea id="lawyer-ties" name="lawyer-ties" rows="3" placeholder="Be specific or we’ll just guess." required></textarea>
+      
+        <label for="sure-about-this">Are you sure about this (like, *really* sure)?</label>
+        <select id="sure-about-this" name="sure-about-this" required>
+          <option value="">Select</option>
+          <option value="yes">Yes, I stand by this</option>
+          <option value="no">No, but they're cheap</option>
+          <option value="unsure">Honestly, now that you mention it...</option>
+        </select>
+      
+        <button type="submit">Submit Lawyer</button>
+      </form>
+      
+      <div class="hover-message">Many of the disappeared and deported have lawyers, too<br>Had</div>
+    </div>
+  
+
+
+
+
+
+
+
+    <div class="document-container">
+      <div id="judge" class="document disabled">Judge</div>
+      <form class="document-form" id="form-judge">
+      
+        <label for="judge-name">Judge's Name (or title if you prefer to remain anonymous):</label>
+        <input type="text" id="judge-name" name="judge-name" required />
+      
+        <label for="worried-scared">Are you worried and scared?</label>
+        <input type="text" id="worried-scared" name="worried-scared" required />
+      
+        <label for="parents-worried">Are your parents worried?</label>
+        <input type="text" id="parents-worried" name="parents-worried" required />
+      
+        <label for="parents-disappointed">Would your parents be disappointed and blame you if you were deported?</label>
+        <input type="text" id="parents-disappointed" name="parents-disappointed" required />
+      
+        <label for="house-without-files">If you weren’t deported, would you ever leave the house without clenching all your files?</label>
+        <input type="text" id="house-without-files" name="house-without-files" required />
+      
+        <label for="sure-you-want-to-stay">Now that you're here, are you sure you want to stay in this land of the free?</label>
+        <input type="text" id="sure-you-want-to-stay" name="sure-you-want-to-stay" required />
+
+        <button type="submit">Submit Judge</button>
+      </form>
+      
+      
+      <div class="hover-message">Is this your dawning hope?<br>Maybe, maybe not.<br>But Trump just fired 8 of them.</div>
+    </div>
+  </div>
+
+
+
+
+
+
+
+  
+  <div id="message"></div>
+
+
+  <div class="iframe-container">
+    <iframe src="https://www.npr.org/2025/04/22/nx-s1-5372681/trump-immigration-judges-fired" data-target="https://www.npr.org/2025/04/22/nx-s1-5372681/trump-immigration-judges-fired"></iframe>
+    <iframe src="https://www.npr.org/2025/04/21/g-s1-61500/house-democrats-land-in-el-salvador-demand-abrego-garcias-return" data-target="https://www.npr.org/2025/04/21/g-s1-61500/house-democrats-land-in-el-salvador-demand-abrego-garcias-return"></iframe>
+    <iframe src="https://www.aclu.org/know-your-rights/immigrants-rights" data-target="https://www.aclu.org/know-your-rights/immigrants-rights"></iframe>
+    <iframe src="https://www.npr.org/2025/04/22/nx-s1-5366021/international-students-face-visa-cancellations-despite-no-criminal-records" data-target="https://www.npr.org/2025/04/22/nx-s1-5366021/international-students-face-visa-cancellations-despite-no-criminal-records"></iframe>
+    <iframe src="https://www.islipforward.org/ice" data-target="https://www.islipforward.org/ice"></iframe>
+    </div>
+
+  <!-- Full-screen Video -->
+  <div id="video">
+    <video id="videoPlayer" controls>
+      <source src="https://media-hosting.imagekit.io/6b08911527b54395/deportation.mp4?Expires=1840068987&Key-Pair-Id=K2ZIVPTIP2VGHC&Signature=GkUttqWeSSumzFxRIsAyjvu54niRRoCxBo0Jv2dFEEmgFwq2KeWDovEmaaaY9JPD1whnlxhQ-EhHHWpeUgS~9az5hgnV3AF2gZuP-QY2RQihrKzqSIgzTLybhLzNLXzsUVB-ZjKmAs2aMFMK7NUwdvJpHK4IadCriucgUsD-69UFPQwuV7opcW3vr9BY7riiqa7hMFEv0Yjd2FmSTe9Phb1pjLDsK6bSBIBcRzhRbVKIsMheYNp4gjiwhYW6aSkK2Kqfqv9o4KraTkG5AccZLye2T6zQGMujkt7crlNLz~WsjTKwBfJiWbCOGhzYPg0hgq4xmfD6eWvi7Tb9hakGrA__" type="video/mp4" autoplay loop muted>
+         Your browser does not support the video tag.
+     </video>
+  </div>
+
+  <script>
+    const king = document.getElementById("king");
+    const murdererImg = document.getElementById("murderer");
+    const message = document.getElementById("message");
+    const timerDisplay = document.getElementById("timer");
+    const progress = document.getElementById("progress");
+    const videoDiv = document.getElementById("video");
+    const videoPlayer = document.getElementById("videoPlayer");
+    const documents = document.querySelectorAll(".document");
+
+
+    let gameOver = false;
+    let timeLeft = 300; // 5 minutes (300 seconds)
+    let progressPercent = 0;
+    let progressInterval;
+    let isPaused = false;
+
+    let murderTimeout;
+    let warningTimeout;
+
+    // Document data object (for adding extra time)
+    const documentData = {
+      I20: { time: 10, extra: 5 },
+      I94: { time: 2, extra: 5 },
+      passport: { time: 15, extra: 5 },
+      F1: { time: 15, extra: 5, prerequisites: ["I20", "I94", "passport"] },
+      physicalProof: { time: 5, extra: 5 },
+      policeClearance: { time: Math.random() * 15 + 5, extra: 5, prerequisite: "F1" },
+      financialProof: { time: 0, multiplier: 1.3 },
+      lawyer: { time: Math.random() * 15 + 5 },
+      judge: { time: 0, risky: true, prerequisite: "F1" },
+    };
+
+    // Timer function for progress bar update
+    function updateTimerDisplay() {
+      const mins = Math.floor(timeLeft / 60);
+      const secs = timeLeft % 60;
+      timerDisplay.textContent = `Time Remaining: ${mins}:${secs < 10 ? '0' : ''}${secs}`;
+
+      // Update the progress bar based on the remaining time
+      const progressPercent = (1 - timeLeft / 300) * 100;
+      progress.style.width = `${progressPercent}%`;
+    }
+
+   
+
+    function addTime(seconds) {
+  console.log(`Adding ${seconds} seconds`);
+  timeLeft += seconds;
+  message.textContent = `+${seconds} seconds added!`;
+  updateTimerDisplay(); // Update the timer and progress bar when time is added
+
+  clearTimeout(messageTimeout); // Clear any existing timeout before setting a new one
+  messageTimeout = setTimeout(() => {
+    message.textContent = ""; // Clear the message after 3 seconds
+  }, 3000);
+}
+
+    // Main progress bar countdown
+    function startProgress() {
+      progressInterval = setInterval(() => {
+        if (gameOver) return;
+
+        timeLeft--;
+        updateTimerDisplay();  // Update the timer and progress bar
+
+        if (timeLeft <= 0) {
+          clearInterval(progressInterval);
+          gameOver = true;
+          message.textContent = "⏱️ Time’s up! Go back to where you came from!";
+        }
+      }, 1000);
+    }
+
+    // Set murderer image
+    function setMurdererImage(mode) {
+      if (mode === "idle") {
+        murdererImg.src = "ICE1.png";
+      } else if (mode === "murder") {
+        murdererImg.src = "ICE2.png";
+      }
+    }
+    function setKingImage(mode) {
+  if (mode === "idle") {
+    king.src = "student1.png";
+  } else if (mode === "alert") {
+    king.src = "student2.png";
+  }
+}
+
+king.addEventListener("click", () => {
+  if (gameOver || isPaused) return;
+
+  clearTimeout(murderTimeout);
+  clearTimeout(warningTimeout);
+  setMurdererImage("idle");
+  setKingImage("alert"); // 👈 Add this
+
+  message.textContent = "Deportation delayed!";
+  scheduleMurderAttempt();
+
+  isPaused = true;
+  setTimeout(() => {
+    isPaused = false;
+    setKingImage("idle"); // 👈 And reset here
+    message.textContent = "";
+  }, 3000);
+});
+
+    // Schedule murder attempt with random time (10 to 20 seconds)
+    function scheduleMurderAttempt() {
+      const delay = Math.floor(Math.random() * 10 + 10) * 1000; // 10–20s
+      const warningTime = delay - 5000; // 5 seconds before murder
+
+      // Murder warning cue
+      warningTimeout = setTimeout(() => {
+        if (!gameOver) {
+          setMurdererImage("murder");
+        }
+      }, warningTime);
+
+      // Murder attempt after random time
+      murderTimeout = setTimeout(() => {
+        if (!gameOver) {
+          message.textContent = "You're DEPORTED!";
+          gameOver = true;
+          clearInterval(progressInterval);
+          setMurdererImage("murder");
+          playDeportationVideo();
+        }
+      }, delay);
+    }
+
+    // Cancel any ongoing murder attempt if the king is clicked
+    king.addEventListener("click", () => {
+      if (gameOver || isPaused) return;
+
+      clearTimeout(murderTimeout);
+      clearTimeout(warningTimeout);
+      setMurdererImage("idle");
+
+      message.textContent = "Deportation delayed!";
+      scheduleMurderAttempt();
+
+      isPaused = true;
+      setTimeout(() => {
+        isPaused = false;
+        message.textContent = "";
+      }, 3000);
+    });
+
+    // Process documents
+    function processDocument(id) {
+      if (gameOver || document.getElementById(id).classList.contains("processed")) return;
+
+      const doc = document.getElementById(id);
+      const data = documentData[id];
+
+      // Check prerequisites for F1, Police Clearance, and Judge
+      if (data.prerequisites) {
+        const prerequisitesMet = data.prerequisites.every(prerequisite => document.getElementById(prerequisite).classList.contains("processed"));
+        if (!prerequisitesMet) return;
+      }
+
+      if (data.prerequisite && !document.getElementById(data.prerequisite).classList.contains("processed")) return;
+
+      // Add progress bar to document
+      const progressBar = document.createElement("div");
+      progressBar.classList.add("progress-bar");
+      const progressFill = document.createElement("div");
+      progressFill.classList.add("progress");
+      progressBar.appendChild(progressFill);
+      doc.appendChild(progressBar);
+
+      let elapsedTime = 0;
+      const interval = setInterval(() => {
+        elapsedTime += 1;
+        progressFill.style.width = `${(elapsedTime / data.time) * 100}%`;
+
+        if (elapsedTime >= data.time) {
+          clearInterval(interval);
+          doc.removeChild(progressBar);
+
+          if (id === "F1" && Math.random() < 0.3) {
+            addTime(-5); // Random reduction for F1
+          } else {
+            addTime(data.extra || 0);
+          }
+
+          // Mark document as processed
+          doc.classList.add("processed");
+          doc.style.background = "yellow";  // Change color to yellow
+
+          // Enable next clickable items if prerequisites are met
+          if (id === "F1") {
+            document.getElementById("policeClearance").style.opacity = 1;
+            document.getElementById("judge").style.opacity = 1;
+            document.getElementById("policeClearance").classList.remove("disabled");
+            document.getElementById("judge").classList.remove("disabled");
+          }
+        }
+      }, 1000);
+    }
+
+    documents.forEach(doc => {
+  doc.addEventListener("click", () => {
+    const form = doc.parentElement.querySelector(".document-form");
+
+    // Toggle form visibility
+    if (form.style.display === "block") {
+      form.style.display = "none"; // Hide the form
+    } else {
+      documentForms.forEach(f => (f.style.display = "none")); // Hide all other forms
+      form.style.display = "block"; // Show only the clicked form
+    }
+  });
+});
+
+
+
+function playDeportationVideo() {
+  console.log("playDeportationVideo called");
+
+  videoDiv.style.display = "flex";
+
+  // Delay playback to ensure DOM updates are processed
+  setTimeout(() => {
+    videoPlayer.play().then(() => {
+      console.log("Playback started");
+    }).catch(error => {
+      console.error("Playback failed:", error);
+    });
+  }, 100);
+
+  videoPlayer.addEventListener("ended", () => {
+    console.log("Video ended");
+    videoDiv.style.display = "none";
+    gameOver = true;
+    message.textContent = "You are DEPORTED!";
+  });
+}
+
+
+    function processDocument(id) {
+  if (gameOver || document.getElementById(id).classList.contains("processed")) return;
+
+  const doc = document.getElementById(id);
+  const data = documentData[id];
+
+  // Check multiple prerequisites
+  if (data.prerequisites) {
+    const prerequisitesMet = data.prerequisites.every(prerequisite =>
+      document.getElementById(prerequisite).classList.contains("processed")
+    );
+    if (!prerequisitesMet) {
+      message.textContent = `⚠️ You need to complete: ${data.prerequisites.join(', ')}`;
+      return;
+    }
+  }
+
+  // Check single prerequisite
+  if (data.prerequisite && !document.getElementById(data.prerequisite).classList.contains("processed")) {
+    message.textContent = `⚠️ You need to complete: ${data.prerequisite}`;
+    return;
+  }
+
+  // Add progress bar
+  const progressBar = document.createElement("div");
+  progressBar.classList.add("progress-bar");
+  const progressFill = document.createElement("div");
+  progressFill.classList.add("progress");
+  progressBar.appendChild(progressFill);
+  doc.appendChild(progressBar);
+
+  let elapsedTime = 0;
+  const interval = setInterval(() => {
+    elapsedTime += 1;
+    progressFill.style.width = `${(elapsedTime / data.time) * 100}%`;
+
+    if (elapsedTime >= data.time) {
+      clearInterval(interval);
+      doc.removeChild(progressBar);
+
+      if (id === "F1" && Math.random() < 0.3) {
+        addTime(-5); // Random reduction for F1
+      } else {
+        addTime(data.extra || 0);
+      }
+
+      doc.classList.add("processed");
+      doc.style.background = "yellow";
+
+      // Unlock next steps visually
+      if (id === "F1") {
+        ["policeClearance", "judge"].forEach(unlockId => {
+          const unlockDoc = document.getElementById(unlockId);
+          unlockDoc.classList.remove("disabled");
+          unlockDoc.style.opacity = 1;
+        });
+      }
+
+      // If policeClearance gets completed, also unlock judge if needed
+      if (id === "policeClearance" || id === "judge") {
+        doc.style.opacity = 1;
+        doc.classList.remove("disabled");
+      }
+
+      message.textContent = ""; // Clear warning if any
+    }
+  }, 1000);
+}
+
+    // Start the game
+    startProgress();
+    scheduleMurderAttempt();
+
+    // Move the king and murderer along the timeline
+    const moveKingAndMurderer = () => {
+      const gameAreaWidth = 300; // Game area width in pixels
+      const endPosition = gameAreaWidth - 60; // Adjusted to stop the king and murderer at the end of the game area
+
+      let kingPosition = 0;
+      let murdererPosition = 0;
+
+      const moveInterval = setInterval(() => {
+        if (gameOver) {
+          clearInterval(moveInterval);
+          return;
+        }
+
+        const movementStep = (gameAreaWidth / 300); // Movement step per second, to complete the journey in 5 minutes
+
+        kingPosition += movementStep;
+        murdererPosition += movementStep;
+
+        // Set the position of the king and the murderer
+        king.style.left = `${kingPosition}px`;
+        murdererImg.style.left = `${murdererPosition}px`;
+
+        // Ensure the murderer is always to the left of the king
+        if (murdererPosition >= kingPosition) {
+          murdererPosition = kingPosition - 60;
+        }
+
+      }, 1000);
+    };
+
+    moveKingAndMurderer();
+
+
+      // Handle form submission for all documents
+  const documentForms = document.querySelectorAll(".document-form");
+
+documentForms.forEach(form => {
+  form.addEventListener("submit", event => {
+    event.preventDefault(); // Prevent default form submission behavior
+    const documentId = form.id.replace("form-", ""); // Extract document ID from form ID
+    processDocument(documentId); // Trigger processing for the corresponding document
+  });
+});
+
+// Process documents (existing logic)
+function processDocument(id) {
+  if (gameOver || document.getElementById(id).classList.contains("processed")) return;
+
+  const doc = document.getElementById(id);
+  const data = documentData[id];
+
+  // Check prerequisites for F1, Police Clearance, and Judge
+  if (data.prerequisites) {
+    const prerequisitesMet = data.prerequisites.every(prerequisite =>
+      document.getElementById(prerequisite).classList.contains("processed")
+    );
+    if (!prerequisitesMet) return;
+  }
+
+  if (data.prerequisite && !document.getElementById(data.prerequisite).classList.contains("processed")) return;
+
+  // Add progress bar to document
+  const progressBar = document.createElement("div");
+  progressBar.classList.add("progress-bar");
+  const progressFill = document.createElement("div");
+  progressFill.classList.add("progress");
+  progressBar.appendChild(progressFill);
+  doc.appendChild(progressBar);
+
+  let elapsedTime = 0;
+  const interval = setInterval(() => {
+    elapsedTime += 1;
+    progressFill.style.width = `${(elapsedTime / data.time) * 100}%`;
+
+    if (elapsedTime >= data.time) {
+      clearInterval(interval);
+      doc.removeChild(progressBar);
+
+      if (id === "F1" && Math.random() < 0.3) {
+        addTime(-5); // Random reduction for F1
+      } else {
+        addTime(data.extra || 0);
+      }
+
+      // Mark document as processed
+      doc.classList.add("processed");
+      doc.style.background = "yellow"; // Change color to yellow
+
+      // Enable next clickable items if prerequisites are met
+      if (id === "F1") {
+        document.getElementById("policeClearance").style.opacity = 1;
+        document.getElementById("judge").style.opacity = 1;
+        document.getElementById("policeClearance").classList.remove("disabled");
+        document.getElementById("judge").classList.remove("disabled");
+      }
+    }
+  }, 1000);
+}
+
+
+
+    // Get all iframes
+    const iframes = document.querySelectorAll('iframe');
+
+    // Loop through each iframe to add hover functionality
+    iframes.forEach(iframe => {
+      let hoverTimer;
+
+      // Handle mouseenter event
+      iframe.addEventListener('mouseenter', () => {
+        hoverTimer = setTimeout(() => {
+          // Redirect to the website after 5 seconds
+          window.location.href = iframe.getAttribute('data-target');
+        }, 5000); // 5000 ms = 5 seconds
+      });
+
+      // Handle mouseleave event
+      iframe.addEventListener('mouseleave', () => {
+        // Clear the timer if the mouse leaves the iframe
+        clearTimeout(hoverTimer);
+      });
+    });
+
+
+    // Handle form submission for all documents
+
+// Object to track the last submission time for each form
+const lastSubmissionTimes = {};
+
+documentForms.forEach(form => {
+  form.addEventListener("submit", event => {
+    event.preventDefault(); // Prevent default form submission behavior
+
+    const documentId = form.id.replace("form-", ""); // Extract document ID from form ID
+
+    // Get the current time
+    const currentTime = Date.now();
+
+    // Check if the form has a cooldown
+    const lastSubmissionTime = lastSubmissionTimes[documentId] || 0; // Default to 0 if no previous submission
+    const timeSinceLastSubmission = (currentTime - lastSubmissionTime) / 1000; // Time in seconds
+
+    if (timeSinceLastSubmission < 60) {
+      // Cooldown is active, show a message
+      message.textContent = `⏳ Please wait ${Math.ceil(60 - timeSinceLastSubmission)} seconds before submitting again.`;
+      setTimeout(() => {
+        message.textContent = ""; // Clear the message after 3 seconds
+      }, 3000);
+      return;
+    }
+
+    // Update the last submission time for this form
+    lastSubmissionTimes[documentId] = currentTime;
+
+    // Trigger processing for the corresponding document
+    processDocument(documentId);
+  });
+});
+
+  </script>
+</body>
+</html>
+
+
